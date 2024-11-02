@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galeri Foto</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: center;
+      }
+
+      .thumbnail {
+        width: 150px;
+        height: 100px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+      }
+
+      .thumbnail img {
+        width: 100%;
+        height: auto;
+      }
+
+      #previewModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+        flex-direction: column; 
+      }
+
+      #previewModal img {
+        max-width: 80%;
+        max-height: 80%;
+        border-radius: 5px;
+      }
+
+      #previewModal .download-btn {
+        margin-top: 10px;
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #previewModal .download-btn:hover {
+        background-color: #218838;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        color: white;
+        cursor: pointer;
+      }
+
+      #previewImage {
+        display: block;
+        max-width: 80%;
+        max-height: 80%;
+        border-radius: 5px;
+        margin-bottom: 10px; 
+      }
+
+      .download-btn {
+        display: inline-block;
+        text-align: center;
+      }
+
+      .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        padding: 10px;
+        font-size: 24px;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+      .prev-btn {
+        left: 10px; 
+      }
+
+      .next-btn {
+        right: 10px; 
+      }
+
+      .nav-btn:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Galeri Foto</h1>
+    <div class="gallery" id="gallery"></div>
+
+    <div id="previewModal">
+      <span class="close-btn" onclick="closePreview()">&times;</span>
+
+      <!-- Tombol Previous -->
+      <button class="nav-btn prev-btn" onclick="prevImage()">&#10094;</button>
+
+      <img id="previewImage" src="" alt="Preview Gambar" />
+
+      <!-- Tombol Next -->
+      <button class="nav-btn next-btn" onclick="nextImage()">&#10095;</button>
+
+      <a id="downloadLink" download>
+        <button class="download-btn">Unduh Gambar</button>
+      </a>
+    </div>
+
+    <script>
+      // Memuat gambar dari server
+      let currentImageIndex = 0;
+      let images = [];
+
+      // Memuat gambar dari server
+      async function loadImages() {
+        try {
+          const response = await fetch("muat_gambar.php");
+          images = await response.json();
+          const gallery = document.getElementById("gallery");
+
+          images.forEach((image, index) => {
+            const thumbnailDiv = document.createElement("div");
+            thumbnailDiv.className = "thumbnail";
+            thumbnailDiv.onclick = () => openPreview(index); 
+            const imgElement = document.createElement("img");
+            imgElement.src = `foto/${image}`;
+            imgElement.alt = image;
+            thumbnailDiv.appendChild(imgElement);
+            gallery.appendChild(thumbnailDiv);
+          });
+        } catch (error) {
+          console.error("Error memuat gambar:", error);
+        }
+      }
+
+      function openPreview(index) {
+        currentImageIndex = index;
+        const imageSrc = `foto/${images[currentImageIndex]}`;
+        document.getElementById("previewModal").style.display = "flex";
+        document.getElementById("previewImage").src = imageSrc;
+        document.getElementById("downloadLink").href = imageSrc;
+      }
+
+      function closePreview() {
+        document.getElementById("previewModal").style.display = "none";
+      }
+
+      function nextImage() {
+        currentImageIndex = (currentImageIndex + 1) % images.length; 
+        updatePreviewImage();
+      }
+
+      function prevImage() {
+        currentImageIndex =
+          (currentImageIndex - 1 + images.length) % images.length; 
+        updatePreviewImage();
+      }
+
+      function updatePreviewImage() {
+        const imageSrc = `foto/${images[currentImageIndex]}`;
+        document.getElementById("previewImage").src = imageSrc;
+        document.getElementById("downloadLink").href = imageSrc;
+      }
+
+      
+      window.onload = loadImages;
+    </script>
+  </body>
+</html>
